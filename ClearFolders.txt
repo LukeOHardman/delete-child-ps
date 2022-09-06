@@ -1,6 +1,6 @@
 
 
-$SiteURL = "https://mace365.sharepoint.com/sites/AWE-Aurora"
+$SiteURL = "[Sitename]"
 $FolderSiteRelativeURL = "/Shared Documents/Leanne delete"
  
 
