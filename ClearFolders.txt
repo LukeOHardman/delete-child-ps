@@ -1,0 +1,54 @@
+
+
+$SiteURL = "https://mace365.sharepoint.com/sites/AWE-Aurora"
+$FolderSiteRelativeURL = "/Shared Documents/Leanne delete"
+ 
+
+ 
+
+$Web = Get-PnPWeb
+$Folder = Get-PnPFolder -Url $FolderSiteRelativeURL
+ 
+
+Function Empty-PnPFolder([Microsoft.SharePoint.Client.Folder]$Folder)
+{
+    
+    If($Web.ServerRelativeURL -eq "/")
+    {
+        $FolderSiteRelativeURL = $Folder.ServerRelativeUrl
+    }
+    Else
+    {       
+        $FolderSiteRelativeURL = $Folder.ServerRelativeUrl.Replace($Web.ServerRelativeURL,[string]::Empty)
+    }
+ 
+   
+    $Files = Get-PnPFolderItem -FolderSiteRelativeUrl $FolderSiteRelativeURL -ItemType File
+    ForEach ($File in $Files)
+    {
+        
+        Remove-PnPFile -ServerRelativeUrl $File.ServerRelativeURL -Force -Recycle
+        Write-Host -f Green ("Deleted File: '{0}' at '{1}'" -f $File.Name, $File.ServerRelativeURL)       
+    }
+ 
+    
+    $SubFolders = Get-PnPFolderItem -FolderSiteRelativeUrl $FolderSiteRelativeURL -ItemType Folder
+    Foreach($SubFolder in $SubFolders)
+    {
+        
+        If(($SubFolder.Name -ne "Forms") -and (-Not($SubFolder.Name.StartsWith("_"))))
+        {
+            
+            Empty-PnPFolder -Folder $SubFolder
+ 
+            
+            Remove-PnPFolder -Name $SubFolder.Name -Folder $FolderSiteRelativeURL -Force -Recycle
+            Write-Host -f Green ("Deleted Folder: '{0}' at '{1}'" -f $SubFolder.Name, $SubFolder.ServerRelativeURL)
+        }
+    }
+}
+ 
+
+Empty-PnPFolder -Folder $Folder
+
+
